@@ -1,10 +1,11 @@
 package com.mondecitronne.homunculus;
 
-import javax.annotation.Nullable;
-
 import com.mojang.authlib.GameProfile;
-import com.mondecitronne.homunculus.proxy.SkinHandlerProxy;
-
+import com.mondecitronne.homunculus.skin.DefaultSkin;
+import com.mondecitronne.homunculus.skin.FallbackSkin;
+import com.mondecitronne.homunculus.skin.HTTPSkin;
+import com.mondecitronne.homunculus.skin.PlayerSkin;
+import com.mondecitronne.homunculus.skin.Skin;
 import io.netty.util.internal.StringUtil;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.nbt.NBTTagCompound;
@@ -13,54 +14,99 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityHomunculus extends EntityLiving {
-	@SidedProxy(clientSide = "com.mondecitronne.homunculus.proxy.SkinHandlerClientProxy", serverSide = "com.mondecitronne.homunculus.proxy.SkinHandlerProxy", modId = "homunculus")
-	private static SkinHandlerProxy skinProxy;
+	private static final DataParameter<NBTTagCompound> SKIN_SOURCE = EntityDataManager.createKey(EntityHomunculus.class, DataSerializers.COMPOUND_TAG);
 	
-	private SkinHandlerProxy.SkinOwner skinOwner;
-	private static final DataParameter<NBTTagCompound> SKIN_OWNER = EntityDataManager.createKey(EntityHomunculus.class, DataSerializers.COMPOUND_TAG);
+	private final Skin defaultSkin;
+	private static final Skin FALLBACK_SKIN = new FallbackSkin();
+	private Skin skin;
 	
 	public EntityHomunculus(World world) {
 		super(world);
+		getDataManager().register(SKIN_SOURCE, new NBTTagCompound());
+		defaultSkin = new DefaultSkin(getUniqueID());
 	}
 	
 	@Override
 	protected void entityInit() {
 		super.entityInit();
-		this.getDataManager().register(SKIN_OWNER, new NBTTagCompound());
 	}
 	
-	private boolean isPlayerProfileUpdated(GameProfile input) {
-		if (skinOwner == null) {
-			return input != null;
+	private boolean isPlayerProfileUpdated(GameProfile a, GameProfile b) {
+		if (b == null) {
+			return a != null;
 		} else {
-			GameProfile skinOwnerProfile = skinOwner.getPlayerProfile();
-			return !skinOwnerProfile.getName().toLowerCase().equals(input.getName().toLowerCase()) || (input.getId() != null && !input.getId().equals(skinOwnerProfile.getId()));
+			return !a.getName().toLowerCase().equals(b.getName().toLowerCase()) || (a.getId() != null && !b.getId().equals(a.getId()));
 		}
 	}
 	
-	@Nullable
-	public SkinHandlerProxy.SkinOwner getSkinOwner() {
-		GameProfile ownerProfile = NBTUtil.readGameProfileFromNBT(this.getDataManager().get(SKIN_OWNER));
-		if (isPlayerProfileUpdated(ownerProfile) && !StringUtil.isNullOrEmpty(ownerProfile.getName())) {
-			skinOwner = skinProxy.createSkinOwner(ownerProfile);
-		} else if (ownerProfile == null) {
-			skinOwner = null;
+	private void dispatchFetchSkin() {
+		if (this.getEntityWorld().isRemote && skin != null) {
+			skin.dispatchFetch();
 		}
-		return skinOwner;
+	}
+	
+	private void updateSkin() {
+		NBTTagCompound sourceNBT = getDataManager().get(SKIN_SOURCE);
+		if (sourceNBT.hasKey("Type")) {
+			switch (sourceNBT.getString("Type")) {
+			case "player":
+				GameProfile sourceProfile = NBTUtil.readGameProfileFromNBT(sourceNBT);
+				if (sourceProfile == null || StringUtil.isNullOrEmpty(sourceProfile.getName())) {
+					skin = null;
+				}
+				if (!(skin instanceof PlayerSkin) || isPlayerProfileUpdated(((PlayerSkin) skin).getPlayerProfile(), sourceProfile)) {
+					skin = new PlayerSkin(sourceProfile, getEntityWorld().isRemote);
+					dispatchFetchSkin();
+				}
+				break;
+			case "http":
+				String url = sourceNBT.getString("URL");
+				String modelType = sourceNBT.getString("Model");
+				if (!StringUtil.isNullOrEmpty(url)) {
+					if (modelType == null || !modelType.equals("default") && !modelType.equals("slim")) {
+						modelType = "default";
+					}
+					skin = new HTTPSkin(url, modelType);
+					dispatchFetchSkin();
+				} else {
+					skin = null;
+				}
+			default:
+				skin = null;
+				break;
+			}
+		} else {
+			skin = null;
+		}
+	}
+	
+	public Skin getSkin() {
+		updateSkin();
+		if (skin != null) {
+			if (skin.isLoaded()) {
+				return skin;
+			} else {
+				return FALLBACK_SKIN;
+			}
+		} else {
+			return defaultSkin;
+		}
 	}
 	
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
-		if (compound.hasKey("SkinOwner")) {
-			NBTTagCompound ownerCompound = compound.getCompoundTag("SkinOwner");
+		if (compound.hasKey("SkinSource")) {
+			NBTTagCompound sourceCompound = compound.getCompoundTag("SkinSource");
+			this.getDataManager().set(SKIN_SOURCE, sourceCompound);
+		} else if (compound.hasKey("SkinOwner")) {
+			// backwards compatibility with old NBT
+			NBTTagCompound ownerCompound = compound.getCompoundTag("SkinOwner").copy();
 			if (ownerCompound.hasKey("Name")) {
-				this.getDataManager().set(SKIN_OWNER, ownerCompound);
+				ownerCompound.setString("Type", "player");
+				this.getDataManager().set(SKIN_SOURCE, ownerCompound);
 			}
 		}
 	}
@@ -68,17 +114,26 @@ public class EntityHomunculus extends EntityLiving {
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		super.writeToNBT(compound);
-		SkinHandlerProxy.SkinOwner owner = getSkinOwner();
-		if (owner != null) {
+		updateSkin();
+		if (skin instanceof PlayerSkin) {
 			NBTTagCompound profileCompound = new NBTTagCompound();
-			NBTUtil.writeGameProfile(profileCompound, owner.getPlayerProfile());
-            NBTTagCompound ownerCompound = new NBTTagCompound();
-            ownerCompound.setTag("Name", profileCompound.getTag("Name"));
+			NBTUtil.writeGameProfile(profileCompound, ((PlayerSkin) skin).getPlayerProfile());
+			NBTTagCompound sourceCompound = new NBTTagCompound();
+            sourceCompound.setTag("Name", profileCompound.getTag("Name"));
             if (profileCompound.hasKey("Id")) {
-            	ownerCompound.setTag("Id", profileCompound.getTag("Id"));
+            	sourceCompound.setTag("Id", profileCompound.getTag("Id"));
             }
-            compound.setTag("SkinOwner", ownerCompound);
-        }
+            sourceCompound.setString("Type", "player");
+            compound.setTag("SkinSource", sourceCompound);
+		} else if (skin instanceof HTTPSkin) {
+			NBTTagCompound sourceCompound = new NBTTagCompound();
+			sourceCompound.setString("URL", ((HTTPSkin) skin).getUrl());
+			sourceCompound.setString("Model", skin.getModelType());
+			sourceCompound.setString("Type", "http");
+			compound.setTag("SkinSource", sourceCompound);
+		} else if (compound.hasKey("SkinSource")) {
+			compound.removeTag("SkinSource");
+		}
 		return compound;
 	}
 }

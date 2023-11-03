@@ -8,10 +8,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-
 import com.mondecitronne.homunculus.EntityHomunculus;
 import com.mondecitronne.homunculus.Homunculus;
 
