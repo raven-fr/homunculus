@@ -34,10 +34,11 @@ public class EntityHomunculus extends EntityLiving {
 	}
 	
 	private boolean isPlayerProfileUpdated(GameProfile a, GameProfile b) {
-		if (b == null) {
+		if (b == null || b.getName() == null) {
 			return a != null;
 		} else {
-			return !a.getName().toLowerCase().equals(b.getName().toLowerCase()) || (a.getId() != null && !b.getId().equals(a.getId()));
+			return !a.getName().toLowerCase().equals(b.getName().toLowerCase()) || 
+					(b.getId() != null && a.getId() != null && !b.getId().equals(a.getId()));
 		}
 	}
 	
@@ -55,6 +56,7 @@ public class EntityHomunculus extends EntityLiving {
 				GameProfile sourceProfile = NBTUtil.readGameProfileFromNBT(sourceNBT);
 				if (sourceProfile == null || StringUtil.isNullOrEmpty(sourceProfile.getName())) {
 					skin = null;
+					break;
 				}
 				if (!(skin instanceof PlayerSkin) || isPlayerProfileUpdated(((PlayerSkin) skin).getPlayerProfile(), sourceProfile)) {
 					skin = new PlayerSkin(sourceProfile, getEntityWorld().isRemote);
@@ -73,6 +75,7 @@ public class EntityHomunculus extends EntityLiving {
 				} else {
 					skin = null;
 				}
+				break;
 			default:
 				skin = null;
 				break;
@@ -121,6 +124,7 @@ public class EntityHomunculus extends EntityLiving {
 			NBTTagCompound sourceCompound = new NBTTagCompound();
             sourceCompound.setTag("Name", profileCompound.getTag("Name"));
             if (profileCompound.hasKey("Id")) {
+            	// save ID so that if a player changes their name, the skin is invalidated rather than pulling the skin of whoever takes the name
             	sourceCompound.setTag("Id", profileCompound.getTag("Id"));
             }
             sourceCompound.setString("Type", "player");

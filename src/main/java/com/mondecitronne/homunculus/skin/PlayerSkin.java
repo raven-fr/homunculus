@@ -13,17 +13,19 @@ public class PlayerSkin extends Skin {
 	private final GameProfile profile;
 	private final GameProfileFetcher profileFetcher;
 	private final boolean isRemote;
+	boolean profileTexturesLoading;
     
     public PlayerSkin(GameProfile profile, boolean isRemote) {
     	this.profile = profile;
-    	profileFetcher = new GameProfileFetcher(this.profile);
+    	profileFetcher = GameProfileFetcher.fetchProfile(profile);
     	this.isRemote = isRemote;
+    	profileTexturesLoading = false;
     }
     
     @Override
     public boolean isLoaded() {
     	if (this.isRemote) {
-    		return getTexture() != null;
+    		return getTexture() != null && getModelType() != null;
     	} else {
     		return profileFetcher.getGameProfile() != null;
     	}
@@ -32,7 +34,7 @@ public class PlayerSkin extends Skin {
 	public GameProfile getPlayerProfile() {
     	GameProfile fetchProfile = profileFetcher.getGameProfile();
     	if (fetchProfile != null) {
-    		return profileFetcher.getGameProfile();
+    		return fetchProfile;
     	} else {
     		return profile;
     	}
@@ -40,9 +42,13 @@ public class PlayerSkin extends Skin {
 
 	protected MinecraftProfileTexture getProfileTexture() {
 		assert(this.isRemote);
-		GameProfile playerProfile = getPlayerProfile();
+		GameProfile playerProfile = profileFetcher.getGameProfile();
 		if (playerProfile != null) {
 			Minecraft minecraft = Minecraft.getMinecraft();
+			if (!profileTexturesLoading) {
+				minecraft.getSkinManager().loadProfileTextures(playerProfile, null, false);
+				profileTexturesLoading = true;
+			}
 			Map<Type, MinecraftProfileTexture> map = minecraft.getSkinManager().loadSkinFromCache(playerProfile);
 			if (map != null) {
 				return map.get(Type.SKIN);
@@ -59,8 +65,8 @@ public class PlayerSkin extends Skin {
 		assert(this.isRemote);
 		if (getTexture() != null) {
 			MinecraftProfileTexture tex = getProfileTexture();
-			if (tex != null && tex.getMetadata("model") != null) {
-				return tex.getMetadata("model");
+			if (tex != null) {
+				return tex.getMetadata("model") != null ? tex.getMetadata("model") : "default";
 			}
 		}
 		return null;
