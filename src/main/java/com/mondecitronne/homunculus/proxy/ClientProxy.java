@@ -18,7 +18,7 @@ public class ClientProxy extends Proxy {
 	public void preInit(FMLPreInitializationEvent e) {
 		super.preInit(e);
 		RenderingRegistry.registerEntityRenderingHandler(EntityHomunculus.class, RenderHomunculus.FACTORY);
-		
+
 		Homunculus.instance.putDataDirIn(Minecraft.getMinecraft().gameDir);
 		GameProfileFetcher.init(Homunculus.instance.getDataDir());
 	}
@@ -27,4 +27,3 @@ public class ClientProxy extends Proxy {
 	public static void registerModels(ModelRegistryEvent event) {
 	}
 }
-

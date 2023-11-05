@@ -9,7 +9,7 @@ public class ServerProxy extends Proxy {
 	@Override
 	public void preInit(FMLPreInitializationEvent e) {
 		super.preInit(e);
-		Homunculus.instance.putDataDirIn(FMLCommonHandler.instance().getMinecraftServerInstance().getDataDirectory());           
+		Homunculus.instance.putDataDirIn(FMLCommonHandler.instance().getMinecraftServerInstance().getDataDirectory());
 		GameProfileFetcher.init(Homunculus.instance.getDataDir());
 	}
 }

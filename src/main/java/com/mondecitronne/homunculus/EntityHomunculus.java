@@ -16,38 +16,39 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.world.World;
 
 public class EntityHomunculus extends EntityLiving {
-	private static final DataParameter<NBTTagCompound> SKIN_SOURCE = EntityDataManager.createKey(EntityHomunculus.class, DataSerializers.COMPOUND_TAG);
-	
+	private static final DataParameter<NBTTagCompound> SKIN_SOURCE = EntityDataManager.createKey(EntityHomunculus.class,
+			DataSerializers.COMPOUND_TAG);
+
 	private final Skin defaultSkin;
 	private static final Skin FALLBACK_SKIN = new FallbackSkin();
 	private Skin skin;
-	
+
 	public EntityHomunculus(World world) {
 		super(world);
 		getDataManager().register(SKIN_SOURCE, new NBTTagCompound());
 		defaultSkin = new DefaultSkin(getUniqueID());
 	}
-	
+
 	@Override
 	protected void entityInit() {
 		super.entityInit();
 	}
-	
+
 	private boolean isPlayerProfileUpdated(GameProfile a, GameProfile b) {
 		if (b == null || b.getName() == null) {
 			return a != null;
 		} else {
-			return !a.getName().toLowerCase().equals(b.getName().toLowerCase()) || 
-					(b.getId() != null && a.getId() != null && !b.getId().equals(a.getId()));
+			return !a.getName().toLowerCase().equals(b.getName().toLowerCase())
+					|| (b.getId() != null && a.getId() != null && !b.getId().equals(a.getId()));
 		}
 	}
-	
+
 	private void dispatchFetchSkin() {
 		if (this.getEntityWorld().isRemote && skin != null) {
 			skin.dispatchFetch();
 		}
 	}
-	
+
 	private void updateSkin() {
 		NBTTagCompound sourceNBT = getDataManager().get(SKIN_SOURCE);
 		if (sourceNBT.hasKey("Type")) {
@@ -58,7 +59,8 @@ public class EntityHomunculus extends EntityLiving {
 					skin = null;
 					break;
 				}
-				if (!(skin instanceof PlayerSkin) || isPlayerProfileUpdated(((PlayerSkin) skin).getPlayerProfile(), sourceProfile)) {
+				if (!(skin instanceof PlayerSkin)
+						|| isPlayerProfileUpdated(((PlayerSkin) skin).getPlayerProfile(), sourceProfile)) {
 					skin = new PlayerSkin(sourceProfile, getEntityWorld().isRemote);
 					dispatchFetchSkin();
 				}
@@ -84,7 +86,7 @@ public class EntityHomunculus extends EntityLiving {
 			skin = null;
 		}
 	}
-	
+
 	public Skin getSkin() {
 		updateSkin();
 		if (skin != null) {
@@ -97,7 +99,7 @@ public class EntityHomunculus extends EntityLiving {
 			return defaultSkin;
 		}
 	}
-	
+
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
 		super.readFromNBT(compound);
@@ -113,7 +115,7 @@ public class EntityHomunculus extends EntityLiving {
 			}
 		}
 	}
-	
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		super.writeToNBT(compound);
@@ -122,13 +124,14 @@ public class EntityHomunculus extends EntityLiving {
 			NBTTagCompound profileCompound = new NBTTagCompound();
 			NBTUtil.writeGameProfile(profileCompound, ((PlayerSkin) skin).getPlayerProfile());
 			NBTTagCompound sourceCompound = new NBTTagCompound();
-            sourceCompound.setTag("Name", profileCompound.getTag("Name"));
-            if (profileCompound.hasKey("Id")) {
-            	// save ID so that if a player changes their name, the skin is invalidated rather than pulling the skin of whoever takes the name
-            	sourceCompound.setTag("Id", profileCompound.getTag("Id"));
-            }
-            sourceCompound.setString("Type", "player");
-            compound.setTag("SkinSource", sourceCompound);
+			sourceCompound.setTag("Name", profileCompound.getTag("Name"));
+			if (profileCompound.hasKey("Id")) {
+				// save ID so that if a player changes their name, the skin is invalidated
+				// rather than pulling the skin of whoever takes the name
+				sourceCompound.setTag("Id", profileCompound.getTag("Id"));
+			}
+			sourceCompound.setString("Type", "player");
+			compound.setTag("SkinSource", sourceCompound);
 		} else if (skin instanceof HTTPSkin) {
 			NBTTagCompound sourceCompound = new NBTTagCompound();
 			sourceCompound.setString("URL", ((HTTPSkin) skin).getUrl());

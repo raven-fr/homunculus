@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class DefaultSkin extends Skin {
 	private final UUID id;
-	
+
 	public DefaultSkin(UUID id) {
 		this.id = id;
 	}

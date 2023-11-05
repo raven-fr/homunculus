@@ -7,13 +7,13 @@ public abstract class Skin {
 	public boolean isLoaded() {
 		return true;
 	}
-	
+
 	public void dispatchFetch() {
 	}
 
 	@Nullable
 	abstract public String getModelType();
-	
+
 	@Nullable
 	abstract public ResourceLocation getTexture();
 }

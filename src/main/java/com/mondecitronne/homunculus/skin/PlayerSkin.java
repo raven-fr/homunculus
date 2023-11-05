@@ -14,34 +14,34 @@ public class PlayerSkin extends Skin {
 	private final GameProfileFetcher profileFetcher;
 	private final boolean isRemote;
 	boolean profileTexturesLoading;
-    
-    public PlayerSkin(GameProfile profile, boolean isRemote) {
-    	this.profile = profile;
-    	profileFetcher = GameProfileFetcher.fetchProfile(profile);
-    	this.isRemote = isRemote;
-    	profileTexturesLoading = false;
-    }
-    
-    @Override
-    public boolean isLoaded() {
-    	if (this.isRemote) {
-    		return getTexture() != null && getModelType() != null;
-    	} else {
-    		return profileFetcher.getGameProfile() != null;
-    	}
-    }
+
+	public PlayerSkin(GameProfile profile, boolean isRemote) {
+		this.profile = profile;
+		profileFetcher = GameProfileFetcher.fetchProfile(profile);
+		this.isRemote = isRemote;
+		profileTexturesLoading = false;
+	}
+
+	@Override
+	public boolean isLoaded() {
+		if (this.isRemote) {
+			return getTexture() != null && getModelType() != null;
+		} else {
+			return profileFetcher.getGameProfile() != null;
+		}
+	}
 
 	public GameProfile getPlayerProfile() {
-    	GameProfile fetchProfile = profileFetcher.getGameProfile();
-    	if (fetchProfile != null) {
-    		return fetchProfile;
-    	} else {
-    		return profile;
-    	}
+		GameProfile fetchProfile = profileFetcher.getGameProfile();
+		if (fetchProfile != null) {
+			return fetchProfile;
+		} else {
+			return profile;
+		}
 	}
 
 	protected MinecraftProfileTexture getProfileTexture() {
-		assert(this.isRemote);
+		assert (this.isRemote);
 		GameProfile playerProfile = profileFetcher.getGameProfile();
 		if (playerProfile != null) {
 			Minecraft minecraft = Minecraft.getMinecraft();
@@ -62,7 +62,7 @@ public class PlayerSkin extends Skin {
 
 	@Override
 	public String getModelType() {
-		assert(this.isRemote);
+		assert (this.isRemote);
 		if (getTexture() != null) {
 			MinecraftProfileTexture tex = getProfileTexture();
 			if (tex != null) {
@@ -71,11 +71,11 @@ public class PlayerSkin extends Skin {
 		}
 		return null;
 	}
-	
+
 	@Override
 	@Nullable
 	public ResourceLocation getTexture() {
-		assert(this.isRemote);
+		assert (this.isRemote);
 		MinecraftProfileTexture tex = getProfileTexture();
 		if (tex != null) {
 			ResourceLocation location = Minecraft.getMinecraft().getSkinManager().loadSkin(tex, Type.SKIN);

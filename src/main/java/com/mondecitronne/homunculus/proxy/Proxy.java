@@ -16,7 +16,8 @@ import com.mondecitronne.homunculus.Homunculus;
 @Mod.EventBusSubscriber
 public class Proxy {
 	public void preInit(FMLPreInitializationEvent e) {
-		EntityRegistry.registerModEntity(new ResourceLocation(Homunculus.MODID, "homunculus"), EntityHomunculus.class, "homunculus", 0, Homunculus.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(Homunculus.MODID, "homunculus"), EntityHomunculus.class,
+				"homunculus", 0, Homunculus.instance, 64, 3, true);
 	}
 
 	public void init(FMLInitializationEvent e) {

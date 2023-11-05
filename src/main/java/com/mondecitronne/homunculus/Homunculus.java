@@ -44,9 +44,9 @@ public class Homunculus {
 	public File getDataDir() {
 		return dataDir;
 	}
-	
+
 	public void putDataDirIn(File dir) {
-		assert(dataDir == null);
+		assert (dataDir == null);
 		dataDir = new File(dir, MODID + "_data");
 		dataDir.mkdir();
 	}
