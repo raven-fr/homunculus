@@ -14,7 +14,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class Homunculus {
 	public static final String MODID = "homunculus";
 	public static final String NAME = "Homunculus";
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.1";
 
 	@SidedProxy(clientSide = "com.mondecitronne.homunculus.proxy.ClientProxy", serverSide = "com.mondecitronne.homunculus.proxy.ServerProxy")
 	public static Proxy proxy;
