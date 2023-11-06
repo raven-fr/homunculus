@@ -5,13 +5,13 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.Maps;
 import com.mondecitronne.homunculus.EntityHomunculus;
 import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.util.ResourceLocation;
 
-public class RenderHomunculus extends RenderLivingBase<EntityHomunculus> {
+public class RenderHomunculus extends RenderLiving<EntityHomunculus> {
 	public static final Factory FACTORY = new Factory();
 	private final Map<String, ModelPlayer> modelTypes = Maps.<String, ModelPlayer>newHashMap();
 
@@ -35,11 +35,6 @@ public class RenderHomunculus extends RenderLivingBase<EntityHomunculus> {
 	public void doRender(EntityHomunculus entity, double x, double y, double z, float entityYaw, float partialTicks) {
 		mainModel = modelTypes.get(entity.getSkin().getModelType());
 		super.doRender(entity, x, y, z, entityYaw, partialTicks);
-	}
-
-	@Override
-	protected boolean canRenderName(EntityHomunculus entity) {
-		return super.canRenderName(entity) && entity.hasCustomName();
 	}
 
 	public static class Factory implements IRenderFactory<EntityHomunculus> {

@@ -7,7 +7,7 @@ import com.mondecitronne.homunculus.skin.HTTPSkin;
 import com.mondecitronne.homunculus.skin.PlayerSkin;
 import com.mondecitronne.homunculus.skin.Skin;
 import io.netty.util.internal.StringUtil;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.datasync.DataParameter;
@@ -15,7 +15,7 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.world.World;
 
-public class EntityHomunculus extends EntityLiving {
+public class EntityHomunculus extends EntityCreature {
 	private static final DataParameter<NBTTagCompound> SKIN_SOURCE = EntityDataManager.createKey(EntityHomunculus.class,
 			DataSerializers.COMPOUND_TAG);
 
