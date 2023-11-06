@@ -24,6 +24,8 @@ public class EntityHomunculus extends EntityCreature {
 	private static final Skin FALLBACK_SKIN = new FallbackSkin();
 	private Skin skin;
 
+	private boolean masochism;
+
 	public EntityHomunculus(World world) {
 		super(world);
 		getDataManager().register(SKIN_SOURCE, new NBTTagCompound());
@@ -33,6 +35,9 @@ public class EntityHomunculus extends EntityCreature {
 	@Override
 	protected void entityInit() {
 		super.entityInit();
+		if (getRNG().nextInt(70) == 0) {
+			masochism = true;
+		}
 	}
 
 	@Override
@@ -40,6 +45,7 @@ public class EntityHomunculus extends EntityCreature {
 		tasks.addTask(0, new EntityAIPanicFire(this, 0.7));
 		tasks.addTask(1, new EntityAISwimming(this));
 		tasks.addTask(2, new EntityAIWatchLeashHolder(this));
+		tasks.addTask(3, new EntityAIMasochism(this, 0.5, 15.0F));
 	}
 
 	private boolean isPlayerProfileUpdated(GameProfile a, GameProfile b) {
@@ -122,6 +128,7 @@ public class EntityHomunculus extends EntityCreature {
 				this.getDataManager().set(SKIN_SOURCE, ownerCompound);
 			}
 		}
+		masochism = compound.getBoolean("Masochism");
 	}
 
 	@Override
@@ -149,6 +156,13 @@ public class EntityHomunculus extends EntityCreature {
 		} else if (compound.hasKey("SkinSource")) {
 			compound.removeTag("SkinSource");
 		}
+		if (masochism) {
+			compound.setBoolean("Masochism", masochism);
+		}
 		return compound;
+	}
+
+	public boolean isMasochist() {
+		return masochism;
 	}
 }
