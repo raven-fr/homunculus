@@ -8,6 +8,7 @@ import com.mondecitronne.homunculus.skin.PlayerSkin;
 import com.mondecitronne.homunculus.skin.Skin;
 import io.netty.util.internal.StringUtil;
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.datasync.DataParameter;
@@ -32,6 +33,13 @@ public class EntityHomunculus extends EntityCreature {
 	@Override
 	protected void entityInit() {
 		super.entityInit();
+	}
+
+	@Override
+	protected void initEntityAI() {
+		tasks.addTask(0, new EntityAIPanicFire(this, 0.7));
+		tasks.addTask(1, new EntityAISwimming(this));
+		tasks.addTask(2, new EntityAIWatchLeashHolder(this));
 	}
 
 	private boolean isPlayerProfileUpdated(GameProfile a, GameProfile b) {
