@@ -11,3 +11,5 @@ A homunculus can be spawned like this:
 A homunculus can be given a player skin like this:
 
 	/summon homunculus:homunculus ~ ~ ~ {SkinOwner:{Name:jeb_}}
+
+[Download the jar here.](https://github.com/raven-fr/homunculus/releases/download/2.0/homunculus-2.0.jar) (1.12.2)
