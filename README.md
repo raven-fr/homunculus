@@ -1,11 +1,13 @@
-# homunculus mod
+# Homunculus Mod
 
-this mod adds mobs that look like players. they presently do nothing otherwise.
+<img src="./homunculus.png">
 
-a homunculus can be spawned like this:
+Homunculi are decorative entities that look just like players. They can use the skin of minecraft account, or a skin downloaded from a URL. They may be leashed and pulled around, and nametags may be applied to them to give them a player name.
+
+A homunculus can be spawned like this:
 
 	/summon homunculus:homunculus
 
-a homunculus can be given a player skin like this:
+A homunculus can be given a player skin like this:
 
 	/summon homunculus:homunculus ~ ~ ~ {SkinOwner:{Name:jeb_}}
